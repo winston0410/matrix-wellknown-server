@@ -1,7 +1,4 @@
-FROM golang:1.15-alpine as server_build
-
-# Add build deps
-RUN apk add --update gcc g++ git
+FROM golang:1.22.4-bullseye as server_build
 
 COPY go.mod go.sum /appbuild/
 
@@ -10,18 +7,15 @@ COPY ./ /appbuild
 RUN set -ex \
     && go version \
     && cd /appbuild \
-    && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -mod=vendor -o server
+    && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -mod=vendor -o server
 
 # Build deployable server
-FROM alpine:latest
-
+FROM scratch
 WORKDIR /opt/server
-
-RUN set -ex \
-    && apk add --update --no-cache ca-certificates tzdata \
-    && update-ca-certificates \
-    && rm -rf /var/cache/apk/*
-
+COPY --from=server_build /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=server_build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=server_build /etc/passwd /etc/passwd
+COPY --from=server_build /etc/group /etc/group
 COPY --from=server_build /appbuild/server /opt/server
 
 EXPOSE 8080

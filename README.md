@@ -9,6 +9,12 @@ Features:
 - Simple managment by passing through your JSON files queried by the `Host`-header.
 - Low footprint (~8MB RAM, 10MB binary), no heavy dependencies (single binary), fast responses (~1ms).
 
+# Docker build
+
+```sh
+docker build -t winston0410/matrix-wellknown-server .
+```
+
 # Setup example
 
 For my own domain `klonmaschine.de` I use the following docker-compose setup:
